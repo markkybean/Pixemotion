@@ -15,7 +15,7 @@ import {
 import Pix from "./Pix";
 import firebaseApp from "./firebaseConfig";
 import { getAuth, onAuthStateChanged, signOut } from "firebase/auth";
-import { getFirestore, addDoc, collection, Timestamp } from 'firebase/firestore';
+import { getFirestore, addDoc, collection, Timestamp, onSnapshot } from 'firebase/firestore';
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -28,10 +28,15 @@ function Home() {
 
   const [userProfile, setUserProfile] = useState('')
   const [pix, setPix] = useState('');
+  const [pixs, setPixs] = useState([]);
 
   const [buttonLoading, setButtonLoading] = useState(false);
 
+
+  
   useEffect(()=>{
+
+    //Authentication
     onAuthStateChanged(auth, (user)=>{
       if(user){
         setUserProfile({
@@ -42,9 +47,22 @@ function Home() {
         navigate('/login');
       }
     });
+
+    // retrieved pix
+
+    onSnapshot(collection(db, "pixs"), snapshot => {
+
+      setPixs(snapshot.docs.map(p=>p.data()));
+      // const pixList = [];
+      // snapshot.forEach(px=>{
+      //   pixList.push(px.data())
+      // })
+      // setPixs(pixList);
+    });
+
   },[])
 
-  const createPix = () =>{
+  const createPix = () => { 
     setButtonLoading(true);
     if(pix!==''){
 
@@ -54,7 +72,7 @@ function Home() {
         name: userProfile.name,
         date_posted: Timestamp.now()
       }
-      addDoc( collection(db, "pix"), pixData).then(()=>{
+      addDoc( collection(db, "pixs"), pixData).then(()=>{
         setPix('');
         setButtonLoading(false);
       });
@@ -62,8 +80,7 @@ function Home() {
     }else{
       alert("Pix cannot be empty").then(()=>{
         setButtonLoading(false);
-      })
-      
+      });
     }
   }
 
@@ -100,7 +117,20 @@ function Home() {
 
           <Divider m={5}></Divider>
 
-          <Pix></Pix>
+          {
+            pixs.map((pixRecord) => (
+              <Pix
+                key={pixRecord.id}
+                body={pixRecord.body}
+                email={pixRecord.user_email}
+                name={pixRecord.name}
+                date_posted={pixRecord.date_posted.toDate().toString()}
+              ></Pix>
+            ))
+          }
+
+
+          
         </Box>
       </Flex>
     </Container>
