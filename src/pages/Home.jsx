@@ -15,16 +15,21 @@ import {
 import Pix from "./Pix";
 import firebaseApp from "./firebaseConfig";
 import { getAuth, onAuthStateChanged, signOut } from "firebase/auth";
+import { getFirestore, addDoc, collection, Timestamp } from 'firebase/firestore';
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
 function Home() {
 
   const auth = getAuth(firebaseApp);
+  const db = getFirestore(firebaseApp);
 
   let navigate = useNavigate();
 
   const [userProfile, setUserProfile] = useState('')
+  const [pix, setPix] = useState('');
+
+  const [buttonLoading, setButtonLoading] = useState(false);
 
   useEffect(()=>{
     onAuthStateChanged(auth, (user)=>{
@@ -38,6 +43,29 @@ function Home() {
       }
     });
   },[])
+
+  const createPix = () =>{
+    setButtonLoading(true);
+    if(pix!==''){
+
+      const pixData = {
+        body: pix,
+        user_email: userProfile.email,
+        name: userProfile.name,
+        date_posted: Timestamp.now()
+      }
+      addDoc( collection(db, "pix"), pixData).then(()=>{
+        setPix('');
+        setButtonLoading(false);
+      });
+
+    }else{
+      alert("Pix cannot be empty").then(()=>{
+        setButtonLoading(false);
+      })
+      
+    }
+  }
 
   const logout = () =>{
     signOut(auth).then(() =>{
@@ -65,9 +93,9 @@ function Home() {
         <Card mt={5} p={5}>
             <FormControl>
                 <FormLabel>What's up?</FormLabel>
-                <Input type="text" />
+                <Input disabled={buttonLoading} type="text" onChange={(e)=>{setPix(e.target.value)}} value={pix} />
             </FormControl>
-            <Button size="sm" w="100px" mt={3}>Pix</Button>
+            <Button isLoading={buttonLoading} size="sm" w="100px" mt={3} onClick={createPix}>Pix</Button>
           </Card>
 
           <Divider m={5}></Divider>
