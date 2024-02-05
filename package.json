@@ -10,15 +10,19 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@chakra-ui/icons": "^2.1.1",
     "@chakra-ui/react": "^2.8.2",
     "@emotion/react": "^11.11.3",
     "@emotion/styled": "^11.11.0",
-    "firebase": "^10.7.2",
-    "framer-motion": "^11.0.2",
+    "@firebase/storage": "^0.12.1",
+    "firebase": "^10.8.0",
+    "framer-motion": "^11.0.3",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "react-router-dom": "^6.21.3",
-    "sweetalert2": "^11.10.4"
+    "react-icons": "^5.0.1",
+    "react-router-dom": "^6.22.0",
+    "sweetalert2": "^11.10.4",
+    "uuid": "^9.0.1"
   },
   "devDependencies": {
     "@types/react": "^18.2.43",
