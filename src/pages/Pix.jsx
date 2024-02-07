@@ -29,65 +29,58 @@ import { BiLike, BiChat, BiShare } from 'react-icons/bi';
 import { BsThreeDotsVertical } from 'react-icons/bs';
 import { EditIcon, DeleteIcon } from "@chakra-ui/icons";
 import { deleteDoc, doc } from "firebase/firestore";
+import { ref, deleteObject } from "firebase/storage";
+import { storage } from "./firebaseConfig";
 
-const Pix = ({ id, body, email, name, date_posted, imageUrl, images, imageIndex, db }) => {
+const Pix = ({ id, body, email, name, date_posted, imageUrl, images, db }) => {
   const { isOpen, onOpen, onClose } = useDisclosure(); // Hook for modal state
   const [editedBody, setEditedBody] = useState(body); // State variable for edited body
   const [editedImageUrl, setEditedImageUrl] = useState(imageUrl); // State variable for edited image URL
 
-  // Function to handle changes in the edit form fields
   const handleBodyChange = (event) => {
-    setEditedBody(event.target.value);
+    setEditedBody(event.target.value); 
   };
 
   const handleImageChange = (event) => {
     setEditedImageUrl(URL.createObjectURL(event.target.files[0]));
   };
 
-  // Function to handle saving the edited Pix
   const saveEditedPix = () => {
-    // Call your backend API to update the Pix with the edited body and image URL
-    // After successful update, close the modal
-    onClose();
+    // Handle saving the edited Pix
   };
 
-  // Function to delete the Pix
-// Function to delete the Pix and its associated images
-const deletePix = () => {
-  if (!id) {
-    console.error("ID is undefined");
-    return;
-  }
-
-  const confirmation = window.confirm(`Are you sure you want to delete this Pix posted by ${name} on ${date_posted}?`);
-  if (confirmation) {
-    // Delete Pix document
-    deleteDoc(doc(db, "pixs", id))
-      .then(() => {
-        // Pix deleted successfully, now delete associated images
-        images.forEach((imageId) => {
-          deleteDoc(doc(db, "images", imageId))
-            .then(() => {
-              console.log("Image deleted successfully");
-            })
-            .catch((error) => {
-              console.error("Error deleting image: ", error);
-              // Handle error if deletion fails
-            });
-        });
-        // Inform user that Pix and associated images were deleted successfully
-        alert("Pix and associated images deleted successfully");
-      })
-      .catch((error) => {
-        console.error("Error deleting Pix: ", error);
-        // Handle error if deletion fails
-      });
-  }
-};
-
-
+  const deletePix = async () => {
+    try {
+      if (!id) {
+        console.error("ID is undefined");
+        return;
+      }
   
-  // Function to format the time from date_posted
+      const confirmation = window.confirm(`Are you sure you want to delete this Pix posted by ${name} on ${date_posted}?`);
+      if (confirmation) {
+        // Delete Pix document
+        await deleteDoc(doc(db, "pixs", id));
+  
+        // Delete associated image from Firebase Storage
+        const filename = imageUrl.split("/").pop();
+        const imageRef = ref(storage, `images/${filename}`);
+        await deleteObject(imageRef);
+  
+        alert("Pix and associated image deleted successfully");
+      }
+    } catch (error) {
+      if (error.code === "storage/object-not-found") {
+        console.error("Object does not exist:", error);
+        alert("The associated image does not exist.");
+      } else {
+        console.error("Error deleting Pix:", error);
+        alert("An error occurred while deleting the Pix.");
+      }
+    }
+  };
+  
+  
+
   const formatTime = (dateString) => {
     const date = new Date(dateString);
     return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -102,14 +95,12 @@ const deletePix = () => {
               <Avatar name="Segun Adebayo" src="https://uxwing.com/wp-content/themes/uxwing/download/peoples-avatars/avatar-icon.png" />
               <Box>
                 <Heading size="sm">{name}</Heading>
-                {/* Display only the time */}
                 <Text fontSize="sm">{formatTime(date_posted)}</Text>
               </Box>
             </Flex>
             <Menu>
               <MenuButton as={IconButton} variant="ghost" colorScheme="gray" aria-label="See menu" icon={<BsThreeDotsVertical />} />
               <MenuList>
-                {/* Open modal on Edit click */}
                 <MenuItem onClick={onOpen}>
                   <Box as="span" mr="2">
                     <EditIcon />
@@ -128,15 +119,14 @@ const deletePix = () => {
         </CardHeader>
         <CardBody>
           <Text>{editedBody}</Text>
-          {/* Render the image if imageUrl exists */}
           <Box mx="auto" maxW="400px" maxH="300px" overflow="hidden">
             <Image src={editedImageUrl} alt="Pix Image" />
           </Box>
         </CardBody>
         <CardFooter
-          justifyContent="space-around" // Distribute items evenly along the row
-          alignItems="center" // Align items vertically
-          textAlign="center" // Center-align button text
+          justifyContent="space-around"
+          alignItems="center"
+          textAlign="center"
           sx={{
             "& > button": {
               minW: "136px",
@@ -154,14 +144,12 @@ const deletePix = () => {
           </Button>
         </CardFooter>
       </Card>
-      {/* Modal for editing */}
       <Modal isOpen={isOpen} onClose={onClose}>
         <ModalOverlay />
         <ModalContent>
           <ModalHeader>Edit Pix</ModalHeader>
           <ModalCloseButton />
           <ModalBody>
-            {/* Edit form components */}
             <Text>Edit Pix Body:</Text>
             <textarea value={editedBody} onChange={handleBodyChange} />
             <Text mt={4}>Edit Image:</Text>

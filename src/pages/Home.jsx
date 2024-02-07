@@ -60,43 +60,45 @@ function Home() {
   const [buttonLoading, setButtonLoading] = useState(false);
 
   useEffect(() => {
-
-    listAll(imageListRef)
-    .then((response) => {
-      const promises = response.items.map((item) => getDownloadURL(item));
-      return Promise.all(promises);
-    })
-    .then((urls) => {
-      setImageList(urls);
-    })
-    .catch((error) => {
-      console.error("Error listing images:", error);
-    });
-
-
-    // Authentication
-    const authStateListener = onAuthStateChanged(auth, (user) => {
-      if (user) {
-        setUserProfile({
-          email: user.email,
-          name: user.displayName,
+    const fetchData = async () => {
+      try {
+        // Fetch image URLs from Firebase Storage
+        const imageRefs = await listAll(imageListRef);
+        const urls = await Promise.all(imageRefs.items.map((item) => getDownloadURL(item)));
+        setImageList(urls);
+        
+        // Authentication
+        const authStateListener = onAuthStateChanged(auth, (user) => {
+          if (user) {
+            setUserProfile({
+              email: user.email,
+              name: user.displayName,
+            });
+          } else {
+            navigate("/login");
+          }
         });
-      } else {
-        navigate("/login");
+  
+        // Retrieve pixs
+        const pixsListener = onSnapshot(collection(db, "pixs"), (snapshot) => {
+          setPixs(snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
+        });
+  
+        // Cleanup function
+        return () => {
+          authStateListener(); // Unsubscribe from auth state changes
+          pixsListener(); // Unsubscribe from pixs collection changes
+        };
+      } catch (error) {
+        console.error("Error fetching data:", error);
       }
-    });
-
-    // Retrieve pix
-    const pixsListener = onSnapshot(collection(db, "pixs"), (snapshot) => {
-      setPixs(snapshot.docs.map((p) => p.data()));
-    });
-
-    // Cleanup function
-    return () => {
-      authStateListener(); // Unsubscribe from auth state changes
-      pixsListener(); // Unsubscribe from pixs collection changes
     };
+  
+    fetchData();
   }, []);
+  
+  
+
 
   const createPix = async () => {
     setButtonLoading(true);
@@ -179,9 +181,9 @@ const handleEditPix = (updatedPix) => {
     });
 };
 
+
   return (
     <Container maxW="1024" pt="100">
-      
       <Heading>Pixemotion</Heading>
       <Text>Every Image Tells a Story</Text>
       <Flex>
@@ -248,6 +250,7 @@ const handleEditPix = (updatedPix) => {
               imageIndex={index} // Pass the index as the imageIndex prop
               db={db} // Pass the db prop
             ></Pix>
+          
           ))}
 
 
