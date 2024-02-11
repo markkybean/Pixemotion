@@ -79,8 +79,6 @@ const Pix = ({ id, body, email, name, date_posted, imageUrl, images, db }) => {
     }
   };
   
-  
-
   const formatTime = (dateString) => {
     const date = new Date(dateString);
     return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -88,7 +86,7 @@ const Pix = ({ id, body, email, name, date_posted, imageUrl, images, db }) => {
 
   return (
     <div>
-      <Card p={5} boxShadow={"lg"} mb={10} maxW={{ base: "100%", sm: "80%", md: "50%" }} mx="auto">
+      <Card p={5} boxShadow={"lg"} mb={10} maxW={{ base: "100%", sm: "80%", md: "50%" }} mx="auto" bg="white" color="gray.800">
         <CardHeader>
           <Flex justify="space-between" align="center">
             <Flex flex="1" gap="4" alignItems="center" flexWrap="wrap">
@@ -133,13 +131,13 @@ const Pix = ({ id, body, email, name, date_posted, imageUrl, images, db }) => {
             },
           }}
         >
-          <Button flex="1" variant="ghost" leftIcon={<BiLike />}>
+          <Button flex="1" variant="ghost" leftIcon={<BiLike />} colorScheme="teal">
             Like
           </Button>
-          <Button flex="1" variant="ghost" leftIcon={<BiChat />}>
+          <Button flex="1" variant="ghost" leftIcon={<BiChat />} colorScheme="teal">
             Comment
           </Button>
-          <Button flex="1" variant="ghost" leftIcon={<BiShare />}>
+          <Button flex="1" variant="ghost" leftIcon={<BiShare />} colorScheme="teal">
             Share
           </Button>
         </CardFooter>
@@ -159,7 +157,7 @@ const Pix = ({ id, body, email, name, date_posted, imageUrl, images, db }) => {
             <Button colorScheme="blue" mr={3} onClick={saveEditedPix}>
               Save
             </Button>
-            <Button variant="ghost" onClick={onClose}>
+            <Button variant="ghost" onClick={onClose} colorScheme="gray">
               Cancel
             </Button>
           </ModalFooter>
