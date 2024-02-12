@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
+import Swal from 'sweetalert2';
 import {
   Card,
   CardBody,
@@ -56,8 +57,15 @@ const Pix = ({ id, body, email, name, date_posted, imageUrl, images, db }) => {
         return;
       }
   
-      const confirmation = window.confirm(`Are you sure you want to delete this Pix posted by ${name} on ${date_posted}?`);
-      if (confirmation) {
+      const confirmation = await Swal.fire({
+        icon: 'question',
+        title: `Are you sure you want to delete this Pix posted by ${name}`,
+        showCancelButton: true,
+        confirmButtonText: 'Delete',
+        cancelButtonText: 'Cancel',
+      });
+  
+      if (confirmation.isConfirmed) {
         // Delete Pix document
         await deleteDoc(doc(db, "pixs", id));
   
@@ -66,15 +74,29 @@ const Pix = ({ id, body, email, name, date_posted, imageUrl, images, db }) => {
         const imageRef = ref(storage, `images/${filename}`);
         await deleteObject(imageRef);
   
-        alert("Pix and associated image deleted successfully");
+        // Show success message with SweetAlert
+        Swal.fire({
+          icon: 'success',
+          title: 'Pix and associated image deleted successfully',
+        });
       }
     } catch (error) {
       if (error.code === "storage/object-not-found") {
         console.error("Object does not exist:", error);
-        alert("The associated image does not exist.");
+        // Show error message with SweetAlert
+        Swal.fire({
+          icon: 'error',
+          title: 'Oops...',
+          text: 'The associated image does not exist.',
+        });
       } else {
         console.error("Error deleting Pix:", error);
-        alert("An error occurred while deleting the Pix.");
+        // Show error message with SweetAlert
+        Swal.fire({
+          icon: 'error',
+          title: 'Oops...',
+          text: 'An error occurred while deleting the Pix.',
+        });
       }
     }
   };
@@ -148,7 +170,7 @@ const Pix = ({ id, body, email, name, date_posted, imageUrl, images, db }) => {
           <ModalHeader>Edit Pix</ModalHeader>
           <ModalCloseButton />
           <ModalBody>
-            <Text>Edit Pix Body:</Text>
+            <Text>Edit:</Text>
             <textarea value={editedBody} onChange={handleBodyChange} />
             <Text mt={4}>Edit Image:</Text>
             <input type="file" accept="image/*" onChange={handleImageChange} />

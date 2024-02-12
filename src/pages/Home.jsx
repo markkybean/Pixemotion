@@ -1,3 +1,4 @@
+import Swal from 'sweetalert2';
 import {
   Container,
   Box,
@@ -103,12 +104,12 @@ function Home() {
 
   const createPix = async () => {
     setButtonLoading(true);
-
+  
     try {
       if (pix !== "" && imageUpload !== null) {
         // Upload image to Firebase Storage
         const imageUrl = await uploadImage(); // Wait for image upload to complete
-
+  
         const pixData = {
           body: pix,
           user_email: userProfile.email,
@@ -116,22 +117,39 @@ function Home() {
           date_posted: Timestamp.now(),
           imageUrl: imageUrl, // Assign the imageUrl obtained from the upload
         };
-
+  
         // Add Pix data to Firestore
         const docRef = await addDoc(collection(db, "pixs"), pixData);
-
+  
         // Update imageList state with the new URL
         setImageList((prevList) => [...prevList, imageUrl]);
-
+  
         // Reset the file input value to null
         setImageUpload(null);
-
+  
         setPix("");
+  
+        // Show success message with SweetAlert
+        Swal.fire({
+          icon: 'success',
+          title: 'Pix created successfully',
+        });
       } else {
-        alert("Pix and image are required");
+        // Show error message with SweetAlert
+        Swal.fire({
+          icon: 'error',
+          title: 'Oops...',
+          text: 'Pix and image are required',
+        });
       }
     } catch (error) {
       console.error("Error creating Pix:", error);
+      // Show error message with SweetAlert
+      Swal.fire({
+        icon: 'error',
+        title: 'Oops...',
+        text: 'An error occurred while creating Pix',
+      });
     } finally {
       setButtonLoading(false);
     }
