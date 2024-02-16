@@ -1,4 +1,5 @@
-import Swal from 'sweetalert2';
+import React, { useState, useEffect } from "react";
+import Swal from "sweetalert2";
 import {
   Container,
   Box,
@@ -13,7 +14,6 @@ import {
   Input,
   Divider,
   Grid,
-  InputRightElement,
   IconButton,
   Menu,
   MenuButton,
@@ -21,9 +21,9 @@ import {
   MenuItem,
   Image,
 } from "@chakra-ui/react";
-import { FiUpload } from "react-icons/fi"; // Import the upload icon
+import { MdPhotoCamera, MdImage } from "react-icons/md";
 import { ChevronDownIcon } from "@chakra-ui/icons";
-
+import { FiUpload } from "react-icons/fi"; // Import FiUpload icon
 import Pix from "./Pix";
 import firebaseApp from "./firebaseConfig";
 import { getAuth, onAuthStateChanged, signOut } from "firebase/auth";
@@ -38,41 +38,30 @@ import {
 } from "firebase/firestore";
 import { storage } from "./firebaseConfig";
 import { ref, uploadBytes, getDownloadURL, listAll } from "firebase/storage";
-
 import { v4 } from "uuid";
-import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
 function Home() {
   const auth = getAuth(firebaseApp);
   const db = getFirestore(firebaseApp);
-
-  let navigate = useNavigate();
-
   const [userProfile, setUserProfile] = useState("");
   const [pix, setPix] = useState("");
   const [pixs, setPixs] = useState([]);
   const [imageUpload, setImageUpload] = useState(null);
   const [imageList, setImageList] = useState([]);
-
-  const [editMode, setEditMode] = useState(false);
-  const [editedPix, setEditedPix] = useState(null);
-
-  const imageListRef = ref(storage, "images/");
-
   const [buttonLoading, setButtonLoading] = useState(false);
+  let navigate = useNavigate();
+  const imageListRef = ref(storage, "images/");
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // Fetch image URLs from Firebase Storage
         const imageRefs = await listAll(imageListRef);
         const urls = await Promise.all(
           imageRefs.items.map((item) => getDownloadURL(item))
         );
         setImageList(urls);
 
-        // Authentication
         const authStateListener = onAuthStateChanged(auth, (user) => {
           if (user) {
             setUserProfile({
@@ -84,15 +73,20 @@ function Home() {
           }
         });
 
-        // Retrieve pixs
         const pixsListener = onSnapshot(collection(db, "pixs"), (snapshot) => {
-          setPixs(snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
+          const sortedPixs = snapshot.docs.map((doc) => ({
+            id: doc.id,
+            ...doc.data(),
+          }));
+          sortedPixs.sort(
+            (a, b) => b.date_posted.toMillis() - a.date_posted.toMillis()
+          );
+          setPixs(sortedPixs);
         });
 
-        // Cleanup function
         return () => {
-          authStateListener(); // Unsubscribe from auth state changes
-          pixsListener(); // Unsubscribe from pixs collection changes
+          authStateListener();
+          pixsListener();
         };
       } catch (error) {
         console.error("Error fetching data:", error);
@@ -104,51 +98,42 @@ function Home() {
 
   const createPix = async () => {
     setButtonLoading(true);
-  
+
     try {
       if (pix !== "" && imageUpload !== null) {
-        // Upload image to Firebase Storage
-        const imageUrl = await uploadImage(); // Wait for image upload to complete
-  
+        const imageUrl = await uploadImage();
+
         const pixData = {
           body: pix,
           user_email: userProfile.email,
           name: userProfile.name,
           date_posted: Timestamp.now(),
-          imageUrl: imageUrl, // Assign the imageUrl obtained from the upload
+          imageUrl: imageUrl,
         };
-  
-        // Add Pix data to Firestore
-        const docRef = await addDoc(collection(db, "pixs"), pixData);
-  
-        // Update imageList state with the new URL
+
+        await addDoc(collection(db, "pixs"), pixData);
+
         setImageList((prevList) => [...prevList, imageUrl]);
-  
-        // Reset the file input value to null
         setImageUpload(null);
-  
         setPix("");
-  
-        // Show success message with SweetAlert
-        Swal.fire({
-          icon: 'success',
-          title: 'Pix created successfully',
-        });
+
+        // Swal.fire({
+        //   icon: 'success',
+        //   title: 'Pix created successfully',
+        // });
       } else {
-        // Show error message with SweetAlert
         Swal.fire({
-          icon: 'error',
-          title: 'Oops...',
-          text: 'Pix and image are required',
+          icon: "error",
+          title: "Oops...",
+          text: "Pix and image are required",
         });
       }
     } catch (error) {
       console.error("Error creating Pix:", error);
-      // Show error message with SweetAlert
       Swal.fire({
-        icon: 'error',
-        title: 'Oops...',
-        text: 'An error occurred while creating Pix',
+        icon: "error",
+        title: "Oops...",
+        text: "An error occurred while creating Pix",
       });
     } finally {
       setButtonLoading(false);
@@ -176,37 +161,24 @@ function Home() {
     });
   };
 
-  // edit
-  // Function to handle updating a pix
-  const handleEditPix = (updatedPix) => {
-    // Get the reference to the pix document in Firestore
-    const pixRef = doc(db, "pixs", updatedPix.id);
-
-    // Update the pix document with the new data
-    updateDoc(pixRef, {
-      body: updatedPix.body,
-      // Update other fields as needed
-    })
-      .then(() => {
-        // Reset edit mode and editedPix state
-        setEditMode(false);
-        setEditedPix(null);
-      })
-      .catch((error) => {
-        console.error("Error updating pix:", error);
-      });
-  };
-
   return (
     <Container maxW={{ base: "100%", lg: "1200px" }} pt="10" bg="gray.100">
-      <Flex justifyContent="space-between" alignItems="center">
-        <Box>
-          <Heading color="teal.500">Pixemotion</Heading>
-          <Text color="gray.600">Every Image Tells a Story</Text>
+      <Flex justifyContent="space-between" alignItems="center" flexWrap="wrap">
+        <Box flex="1" mb={{ base: 4, md: 0 }}>
+          <Heading color="teal.500" fontSize={{ base: "2xl", md: "4xl" }}>
+            Pixemotion
+          </Heading>
+          <Text color="gray.600" fontSize={{ base: "sm", md: "md" }}>
+            Every Image Tells a Story
+          </Text>
         </Box>
 
         <Menu>
-          <MenuButton as={Button} rightIcon={<ChevronDownIcon />} color="teal.500">
+          <MenuButton
+            as={Button}
+            rightIcon={<ChevronDownIcon />}
+            color="teal.500"
+          >
             <Text fontWeight="bold">{userProfile.name}</Text>
           </MenuButton>
           <MenuList>
@@ -231,57 +203,76 @@ function Home() {
 
       <Flex>
         <Spacer />
-        <Box w="100%">
-          <Card mt={5} p={5} bg="white" color="teal.500">
-            <FormControl>
-              <FormLabel>What's up?</FormLabel>
-              <Grid templateColumns={{ base: "1fr", md: "3fr 1fr" }} gap={4}>
-                <Input
-                  w="100%"
-                  disabled={buttonLoading}
-                  type="text"
-                  onChange={(e) => setPix(e.target.value)}
-                  value={pix}
-                />
-                <Input
-                  w="100%"
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) => {
-                    setImageUpload(e.target.files[0]);
-                  }}
-                />
-              </Grid>
-            </FormControl>
-            <Button
-              isLoading={buttonLoading}
-              size="sm"
-              w="100px"
-              mt={3}
-              onClick={createPix}
+        <Box w="100%" px={{ base: 4, md: 0 }}>
+  <Card mx={"auto"} w={{ base: "90%", md: "50%" }} mt={5} p={5} bg="white" color="teal.500">
+    <FormControl>
+      <FormLabel>What's up?</FormLabel>
+      <Flex alignItems="center"> {/* Use flexbox instead of grid */}
+        <Input
+          flex="1" // Adjusted to take up remaining space
+          disabled={buttonLoading}
+          type="text"
+          onChange={(e) => setPix(e.target.value)}
+          value={pix}
+          mr={10} // Added margin to create space between inputs
+        />
+        <Box position="relative">
+          <label htmlFor="file-upload" style={{ cursor: "pointer" }}>
+            <input
+              id="file-upload"
+              type="file"
+              accept="image/*"
+              onChange={(e) => setImageUpload(e.target.files[0])}
+              style={{ display: "none" }}
+            />
+            <IconButton
+              as="span"
+              aria-label="Upload photo"
+              icon={<MdImage />}
+              fontSize={{ base: "16px", md: "20px" }} // Adjusted icon size for responsiveness
+              variant="outline"
               colorScheme="teal"
-            >
-              Pix
-            </Button>
-          </Card>
-
-          <Divider my={5} />
-
-          {pixs.map((pixRecord, index) => (
-            <Pix
-              key={pixRecord.id}
-              id={pixRecord.id} // Pass the id prop
-              body={pixRecord.body}
-              email={pixRecord.user_email}
-              name={pixRecord.name}
-              date_posted={pixRecord.date_posted.toDate().toString()}
-              imageUrl={pixRecord.imageUrl}
-              images={imageList} // Pass the imageList as the images prop
-              imageIndex={index} // Pass the index as the imageIndex prop
-              db={db} // Pass the db prop
-            ></Pix>
-          ))}
+              borderRadius="50%"
+              position="absolute"
+              top="50%"
+              left="50%"
+              transform="translate(-50%, -50%)"
+            />
+          </label>
         </Box>
+      </Flex>
+    </FormControl>
+    <Button
+  isLoading={buttonLoading}
+  size="sm"
+  w={{ base: "100%", md: "100px" }} // Adjusted width for responsiveness
+  mt={3}
+  onClick={createPix}
+  colorScheme="teal"
+>
+  Pix
+</Button>
+
+  </Card>
+  
+  <Divider my={5} />
+  
+  {pixs.map((pixRecord, index) => (
+    <Pix
+      key={pixRecord.id}
+      id={pixRecord.id}
+      body={pixRecord.body}
+      email={pixRecord.user_email}
+      name={pixRecord.name}
+      date_posted={pixRecord.date_posted.toDate().toString()}
+      imageUrl={pixRecord.imageUrl}
+      images={imageList}
+      imageIndex={index}
+      db={db}
+    />
+  ))}
+</Box>
+
       </Flex>
     </Container>
   );

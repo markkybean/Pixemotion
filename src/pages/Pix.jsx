@@ -1,4 +1,4 @@
-import React, { useState, useContext } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import Swal from 'sweetalert2';
 import {
   Card,
@@ -32,11 +32,19 @@ import { EditIcon, DeleteIcon } from "@chakra-ui/icons";
 import { deleteDoc, doc } from "firebase/firestore";
 import { ref, deleteObject } from "firebase/storage";
 import { storage } from "./firebaseConfig";
+import { getAuth } from "firebase/auth";
 
 const Pix = ({ id, body, email, name, date_posted, imageUrl, images, db }) => {
   const { isOpen, onOpen, onClose } = useDisclosure(); // Hook for modal state
   const [editedBody, setEditedBody] = useState(body); // State variable for edited body
   const [editedImageUrl, setEditedImageUrl] = useState(imageUrl); // State variable for edited image URL
+  const [currentUserEmail, setCurrentUserEmail] = useState(""); // State variable for current user's email
+
+  useEffect(() => {
+    // Get the current user's email
+    const auth = getAuth();
+    setCurrentUserEmail(auth.currentUser.email);
+  }, []);
 
   const handleBodyChange = (event) => {
     setEditedBody(event.target.value); 
@@ -56,7 +64,7 @@ const Pix = ({ id, body, email, name, date_posted, imageUrl, images, db }) => {
         console.error("ID is undefined");
         return;
       }
-  
+
       const confirmation = await Swal.fire({
         icon: 'question',
         title: `Are you sure you want to delete this Pix posted by ${name}`,
@@ -64,16 +72,16 @@ const Pix = ({ id, body, email, name, date_posted, imageUrl, images, db }) => {
         confirmButtonText: 'Delete',
         cancelButtonText: 'Cancel',
       });
-  
+
       if (confirmation.isConfirmed) {
         // Delete Pix document
         await deleteDoc(doc(db, "pixs", id));
-  
+
         // Delete associated image from Firebase Storage
         const filename = imageUrl.split("/").pop();
         const imageRef = ref(storage, `images/${filename}`);
         await deleteObject(imageRef);
-  
+
         // Show success message with SweetAlert
         Swal.fire({
           icon: 'success',
@@ -100,11 +108,20 @@ const Pix = ({ id, body, email, name, date_posted, imageUrl, images, db }) => {
       }
     }
   };
-  
+
   const formatTime = (dateString) => {
     const date = new Date(dateString);
-    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    const options = {
+     // weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    };
+    return date.toLocaleString('en-US', options);
   };
+  
 
   return (
     <div>
@@ -118,23 +135,25 @@ const Pix = ({ id, body, email, name, date_posted, imageUrl, images, db }) => {
                 <Text fontSize="sm">{formatTime(date_posted)}</Text>
               </Box>
             </Flex>
-            <Menu>
-              <MenuButton as={IconButton} variant="ghost" colorScheme="gray" aria-label="See menu" icon={<BsThreeDotsVertical />} />
-              <MenuList>
-                <MenuItem onClick={onOpen}>
-                  <Box as="span" mr="2">
-                    <EditIcon />
-                  </Box>
-                  Edit
-                </MenuItem>
-                <MenuItem onClick={deletePix}>
-                  <Box as="span" mr="2">
-                    <DeleteIcon />
-                  </Box>
-                  Delete
-                </MenuItem>
-              </MenuList>
-            </Menu>
+            {currentUserEmail === email && (
+              <Menu>
+                <MenuButton as={IconButton} variant="ghost" colorScheme="gray" aria-label="See menu" icon={<BsThreeDotsVertical />} />
+                <MenuList>
+                  <MenuItem onClick={onOpen}>
+                    <Box as="span" mr="2">
+                      <EditIcon />
+                    </Box>
+                    Edit
+                  </MenuItem>
+                  <MenuItem onClick={deletePix}>
+                    <Box as="span" mr="2">
+                      <DeleteIcon />
+                    </Box>
+                    Delete
+                  </MenuItem>
+                </MenuList>
+              </Menu>
+            )}
           </Flex>
         </CardHeader>
         <CardBody>
