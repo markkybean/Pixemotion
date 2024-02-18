@@ -162,7 +162,7 @@ function Home() {
   };
 
   return (
-    <Container maxW={{ base: "100%", lg: "1200px" }} pt="10" bg="gray.100">
+    <Container maxW={{ base: "100%", lg: "1200px" }} pt="5" bg="gray.100">
       <Flex justifyContent="space-between" alignItems="center" flexWrap="wrap">
         <Box flex="1" mb={{ base: 4, md: 0 }}>
           <Heading color="teal.500" fontSize={{ base: "2xl", md: "4xl" }}>
@@ -186,7 +186,7 @@ function Home() {
               <Image
                 boxSize="2rem"
                 borderRadius="full"
-                src="https://placekitten.com/100/100"
+                src="https://uxwing.com/wp-content/themes/uxwing/download/peoples-avatars/avatar-icon.png"
                 alt="Fluffybuns the destroyer"
                 mr="12px"
               />
@@ -203,76 +203,83 @@ function Home() {
 
       <Flex>
         <Spacer />
-        <Box w="100%" px={{ base: 4, md: 0 }}>
-  <Card mx={"auto"} w={{ base: "90%", md: "50%" }} mt={5} p={5} bg="white" color="teal.500">
-    <FormControl>
-      <FormLabel>What's up?</FormLabel>
-      <Flex alignItems="center"> {/* Use flexbox instead of grid */}
-        <Input
-          flex="1" // Adjusted to take up remaining space
-          disabled={buttonLoading}
-          type="text"
-          onChange={(e) => setPix(e.target.value)}
-          value={pix}
-          mr={10} // Added margin to create space between inputs
-        />
-        <Box position="relative">
-          <label htmlFor="file-upload" style={{ cursor: "pointer" }}>
-            <input
-              id="file-upload"
-              type="file"
-              accept="image/*"
-              onChange={(e) => setImageUpload(e.target.files[0])}
-              style={{ display: "none" }}
-            />
-            <IconButton
-              as="span"
-              aria-label="Upload photo"
-              icon={<MdImage />}
-              fontSize={{ base: "16px", md: "20px" }} // Adjusted icon size for responsiveness
-              variant="outline"
+        <Box w="100%" px={{ base: 2, md: 4 }}>
+          <Card
+            mx={"auto"}
+            w={{ base: "90%", md: "50%" }}
+            mt={5}
+            p={10}
+            bg="white"
+            color="teal.500"
+          >
+            <FormControl>
+              <FormLabel>What's up?</FormLabel>
+              <Flex alignItems="center">
+                {" "}
+                {/* Use flexbox instead of grid */}
+                <Input
+                  flex="1" // Adjusted to take up remaining space
+                  disabled={buttonLoading}
+                  type="text"
+                  onChange={(e) => setPix(e.target.value)}
+                  value={pix}
+                  mr={10} // Added margin to create space between inputs
+                />
+                <Box position="relative">
+                  <label htmlFor="file-upload" style={{ cursor: "pointer" }}>
+                    <input
+                      id="file-upload"
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => setImageUpload(e.target.files[0])}
+                      style={{ display: "none" }}
+                    />
+                    <IconButton
+                      as="span"
+                      aria-label="Upload photo"
+                      icon={<MdImage />}
+                      fontSize={{ base: "16px", md: "30px" }} // Adjusted icon size for responsiveness
+                      variant="outline"
+                      colorScheme="teal"
+                      borderRadius="50%"
+                      position="absolute"
+                      top="50%"
+                      left="50%"
+                      transform="translate(-50%, -50%)"
+                    />
+                  </label>
+                </Box>
+              </Flex>
+            </FormControl>
+            <Button
+              isLoading={buttonLoading}
+              size="sm"
+              w={{ base: "40%", sm: "150px", md: "100px" }} // Adjusted width for responsiveness
+              mt={3}
+              onClick={createPix}
               colorScheme="teal"
-              borderRadius="50%"
-              position="absolute"
-              top="50%"
-              left="50%"
-              transform="translate(-50%, -50%)"
+            >
+              Pix
+            </Button>
+          </Card>
+
+          <Divider my={5} />
+
+          {pixs.map((pixRecord, index) => (
+            <Pix
+              key={pixRecord.id}
+              id={pixRecord.id}
+              body={pixRecord.body}
+              email={pixRecord.user_email}
+              name={pixRecord.name}
+              date_posted={pixRecord.date_posted.toDate().toString()}
+              imageUrl={pixRecord.imageUrl}
+              images={imageList}
+              imageIndex={index}
+              db={db}
             />
-          </label>
+          ))}
         </Box>
-      </Flex>
-    </FormControl>
-    <Button
-  isLoading={buttonLoading}
-  size="sm"
-  w={{ base: "100%", md: "100px" }} // Adjusted width for responsiveness
-  mt={3}
-  onClick={createPix}
-  colorScheme="teal"
->
-  Pix
-</Button>
-
-  </Card>
-  
-  <Divider my={5} />
-  
-  {pixs.map((pixRecord, index) => (
-    <Pix
-      key={pixRecord.id}
-      id={pixRecord.id}
-      body={pixRecord.body}
-      email={pixRecord.user_email}
-      name={pixRecord.name}
-      date_posted={pixRecord.date_posted.toDate().toString()}
-      imageUrl={pixRecord.imageUrl}
-      images={imageList}
-      imageIndex={index}
-      db={db}
-    />
-  ))}
-</Box>
-
       </Flex>
     </Container>
   );

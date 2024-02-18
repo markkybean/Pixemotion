@@ -45,7 +45,7 @@ function Login() {
                     title: "Login Failed",
                     text: "Invalid email or password. Please try again.",
                     icon: "error",
-                    confirmButtonColor: "#3498db"
+                    confirmButtonColor: "#38b2ac" // Teal color
                 });  
             })
 
@@ -54,23 +54,23 @@ function Login() {
                 title: "Login Failed",
                 text: "Please make sure all fields are filled, and passwords match.",
                 icon: "error",
-                confirmButtonColor: "#3498db"
+                confirmButtonColor: "#38b2ac" // Teal color
             });    
         }
     }
 
     return (
-        <Flex p={10} align="center" justify="center" minHeight="100vh" bg={"lightblue"}>
-            <Container borderRadius="xl" maxW={{ base: '100%', md: '75%', lg: '50%', xl: '40%' }} bg=" #8fc1e3" padding={{ base: 4, md: 8 }} p={10}>
-                <Heading mb={{ base: 3, md: 5 }} fontSize={'3xl'}>
+        <Flex p={10} align="center" justify="center" minHeight="100vh" bg={"#f3f3f3"}> {/* Changed background color */}
+            <Container borderRadius="xl" maxW={{ base: '100%', md: '75%', lg: '50%', xl: '40%' }} bg="white" padding={{ base: 4, md: 8 }} p={10}> {/* Changed background color */}
+                <Heading mb={{ base: 3, md: 5 }} fontSize={'3xl'} color="#38b2ac"> {/* Teal color */}
                     Welcome to Pixemotions
                 </Heading>
-                <Text mb={{ base: 3, md: 5 }} fontSize={'2xl'}>
+                <Text mb={{ base: 3, md: 5 }} fontSize={'2xl'} color="#444444"> {/* Changed color */}
                    Login to your account
                 </Text>
 
                 {/* Login form */}
-                <Card borderRadius="xl">
+                <Card borderRadius="xl" bg="#ffffff"> {/* Changed background color */}
                     <CardBody>
                         <FormControl>
                             <FormLabel>Email address</FormLabel>
@@ -93,7 +93,7 @@ function Login() {
                             />
                         </FormControl>
 
-                        <Button mt={6} colorScheme="blue" fontSize={{ base: 'sm', md: 'md' }} onClick={handleLogin}>
+                        <Button mt={6} colorScheme="teal" fontSize={{ base: 'sm', md: 'md' }} onClick={handleLogin}> {/* Teal color */}
                             Login
                         </Button>
                         <Box mt={4}>
