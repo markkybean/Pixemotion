@@ -1,4 +1,4 @@
-import React, { useState, useContext, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import Swal from "sweetalert2";
 import {
   Card,
@@ -35,13 +35,12 @@ import { storage } from "./firebaseConfig";
 import { getAuth } from "firebase/auth";
 
 const Pix = ({ id, body, email, name, date_posted, imageUrl, images, db }) => {
-  const { isOpen, onOpen, onClose } = useDisclosure(); // Hook for modal state
-  const [editedBody, setEditedBody] = useState(body); // State variable for edited body
-  const [editedImageUrl, setEditedImageUrl] = useState(imageUrl); // State variable for edited image URL
-  const [currentUserEmail, setCurrentUserEmail] = useState(""); // State variable for current user's email
+  const { isOpen, onOpen, onClose } = useDisclosure();
+  const [editedBody, setEditedBody] = useState(body);
+  const [editedImageUrl, setEditedImageUrl] = useState(imageUrl);
+  const [currentUserEmail, setCurrentUserEmail] = useState("");
 
   useEffect(() => {
-    // Get the current user's email
     const auth = getAuth();
     setCurrentUserEmail(auth.currentUser.email);
   }, []);
@@ -74,15 +73,12 @@ const Pix = ({ id, body, email, name, date_posted, imageUrl, images, db }) => {
       });
 
       if (confirmation.isConfirmed) {
-        // Delete Pix document
         await deleteDoc(doc(db, "pixs", id));
 
-        // Delete associated image from Firebase Storage
         const filename = imageUrl.split("/").pop();
         const imageRef = ref(storage, `images/${filename}`);
         await deleteObject(imageRef);
 
-        // Show success message with SweetAlert
         Swal.fire({
           icon: "success",
           title: "Pix and associated image deleted successfully",
@@ -91,7 +87,6 @@ const Pix = ({ id, body, email, name, date_posted, imageUrl, images, db }) => {
     } catch (error) {
       if (error.code === "storage/object-not-found") {
         console.error("Object does not exist:", error);
-        // Show error message with SweetAlert
         Swal.fire({
           icon: "error",
           title: "Oops...",
@@ -99,7 +94,6 @@ const Pix = ({ id, body, email, name, date_posted, imageUrl, images, db }) => {
         });
       } else {
         console.error("Error deleting Pix:", error);
-        // Show error message with SweetAlert
         Swal.fire({
           icon: "error",
           title: "Oops...",

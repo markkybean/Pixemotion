@@ -13,7 +13,6 @@ import {
   FormLabel,
   Input,
   Divider,
-  Grid,
   IconButton,
   Menu,
   MenuButton,
@@ -21,9 +20,9 @@ import {
   MenuItem,
   Image,
 } from "@chakra-ui/react";
-import { MdPhotoCamera, MdImage } from "react-icons/md";
+import { MdImage } from "react-icons/md";
 import { ChevronDownIcon } from "@chakra-ui/icons";
-import { FiUpload } from "react-icons/fi"; // Import FiUpload icon
+import { FiUpload } from "react-icons/fi";
 import Pix from "./Pix";
 import firebaseApp from "./firebaseConfig";
 import { getAuth, onAuthStateChanged, signOut } from "firebase/auth";
@@ -33,8 +32,6 @@ import {
   collection,
   Timestamp,
   onSnapshot,
-  updateDoc,
-  doc,
 } from "firebase/firestore";
 import { storage } from "./firebaseConfig";
 import { ref, uploadBytes, getDownloadURL, listAll } from "firebase/storage";
@@ -117,10 +114,17 @@ function Home() {
         setImageUpload(null);
         setPix("");
 
-        // Swal.fire({
-        //   icon: 'success',
-        //   title: 'Pix created successfully',
-        // });
+        Swal.fire({
+          icon: "success",
+          title: "Pix created successfully",
+          toast: true,
+          position: "top-end",
+          showConfirmButton: false,
+          timer: 3000,
+          timerProgressBar: true,
+          background: "#38b2ac",
+          iconColor: "#ffffff",
+        });
       } else {
         Swal.fire({
           icon: "error",
@@ -187,7 +191,7 @@ function Home() {
                 boxSize="2rem"
                 borderRadius="full"
                 src="https://uxwing.com/wp-content/themes/uxwing/download/peoples-avatars/avatar-icon.png"
-                alt="Fluffybuns the destroyer"
+                alt="User Avatar"
                 mr="12px"
               />
               <Text color="teal.500">{userProfile.email}</Text>
@@ -215,15 +219,13 @@ function Home() {
             <FormControl>
               <FormLabel>What's up?</FormLabel>
               <Flex alignItems="center">
-                {" "}
-                {/* Use flexbox instead of grid */}
                 <Input
-                  flex="1" // Adjusted to take up remaining space
+                  flex="1"
                   disabled={buttonLoading}
                   type="text"
                   onChange={(e) => setPix(e.target.value)}
                   value={pix}
-                  mr={10} // Added margin to create space between inputs
+                  mr={10}
                 />
                 <Box position="relative">
                   <label htmlFor="file-upload" style={{ cursor: "pointer" }}>
@@ -238,7 +240,7 @@ function Home() {
                       as="span"
                       aria-label="Upload photo"
                       icon={<MdImage />}
-                      fontSize={{ base: "16px", md: "30px" }} // Adjusted icon size for responsiveness
+                      fontSize={{ base: "16px", md: "30px" }}
                       variant="outline"
                       colorScheme="teal"
                       borderRadius="50%"
@@ -254,7 +256,7 @@ function Home() {
             <Button
               isLoading={buttonLoading}
               size="sm"
-              w={{ base: "40%", sm: "150px", md: "100px" }} // Adjusted width for responsiveness
+              w={{ base: "40%", sm: "150px", md: "100px" }}
               mt={3}
               onClick={createPix}
               colorScheme="teal"

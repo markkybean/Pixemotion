@@ -61,14 +61,18 @@ function Register() {
                 title: "Registration Successful",
                 text: "Your account has been successfully created.",
                 icon: "success",
-                confirmButtonColor: "#38b2ac" // Teal color
+                confirmButtonColor: "#38b2ac", // Teal color
+                confirmButtonText: "Ok",
+                showCancelButton: false,
             });            
         }else{
             Swal.fire({
                 title: "Registration Failed",
                 text: "Please make sure all fields are filled, and passwords match.",
                 icon: "error",
-                confirmButtonColor: "#38b2ac" // Teal color
+                confirmButtonColor: "#38b2ac", // Teal color
+                confirmButtonText: "Ok",
+                showCancelButton: false,
             });            
         }
     };
