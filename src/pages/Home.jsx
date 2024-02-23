@@ -170,7 +170,7 @@ function Home() {
       <Flex justifyContent="space-between" alignItems="center" flexWrap="wrap">
         <Box flex="1" mb={{ base: 4, md: 0 }}>
           <Heading color="teal.500" fontSize={{ base: "2xl", md: "4xl" }}>
-            Pixemotion
+            Pixemotions
           </Heading>
           <Text color="gray.600" fontSize={{ base: "sm", md: "md" }}>
             Every Image Tells a Story
